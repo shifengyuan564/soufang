@@ -16,6 +16,8 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 /**
  * Created by 瓦力.
+ *
+ * TODO: 这个类好像用不上，springboot-blog项目中并没有这么配置
  */
 
 //@Configuration
@@ -23,7 +25,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 //@EnableTransactionManagement    // 事务
 public class JPAConfig {
 
-    @Bean
+/*    @Bean
     @ConfigurationProperties(prefix = "spring.datasource")  // 属性前缀
     public DataSource dataSource() {
         return DataSourceBuilder.create().build();  // 建立数据源
@@ -46,5 +48,5 @@ public class JPAConfig {
         JpaTransactionManager transactionManager = new JpaTransactionManager();
         transactionManager.setEntityManagerFactory(entityManagerFactory);
         return transactionManager;
-    }
+    }*/
 }

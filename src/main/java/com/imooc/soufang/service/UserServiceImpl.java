@@ -9,6 +9,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,7 +30,7 @@ import com.imooc.soufang.entity.dto.UserDTO;
  * Created by 瓦力.
  */
 @Service
-public class UserServiceImpl implements IUserService {
+public class UserServiceImpl implements UserDetailsService, IUserService {
 
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
@@ -63,7 +66,7 @@ public class UserServiceImpl implements IUserService {
 
     @Override
     public ServiceResult<UserDTO> findById(Long userId) {
-        User user = userRepository.findOne(userId);
+        User user = userRepository.findById(userId).get();
         if (user == null) {
             return ServiceResult.notFound();
         }
@@ -123,11 +126,17 @@ public class UserServiceImpl implements IUserService {
                 userRepository.updateEmail(userId, value);
                 break;
             case "password":
-                userRepository.updatePassword(userId, this.passwordEncoder.encodePassword(value, userId));
+                userRepository.updatePassword(userId, this.passwordEncoder.encode(value));
                 break;
             default:
                 return new ServiceResult(false, "不支持的属性");
         }
         return ServiceResult.success();
+    }
+
+    // 根据用户名，查找用户信息
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        return this.findUserByName(username);
     }
 }

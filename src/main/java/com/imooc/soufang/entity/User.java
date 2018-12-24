@@ -56,6 +56,7 @@ public class User implements UserDetails {
         this.password = encodePasswd;
     }
 
+    /* 属性并非数据库表的字段映射 */
     @Transient
     private List<GrantedAuthority> authorityList;
 

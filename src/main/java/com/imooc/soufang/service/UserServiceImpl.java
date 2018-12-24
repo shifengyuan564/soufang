@@ -38,11 +38,19 @@ public class UserServiceImpl implements UserDetailsService, IUserService {
     private final PasswordEncoder passwordEncoder;
 
     @Autowired
-    public UserServiceImpl(UserRepository userRepository, RoleRepository roleRepository, ModelMapper modelMapper, PasswordEncoder passwordEncoder) {
+    public UserServiceImpl(UserRepository userRepository, RoleRepository roleRepository,
+                           ModelMapper modelMapper, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.modelMapper = modelMapper;
         this.passwordEncoder = passwordEncoder;
+    }
+
+
+    // 根据用户名，查找用户信息
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        return this.findUserByName(username);
     }
 
     @Override
@@ -134,9 +142,4 @@ public class UserServiceImpl implements UserDetailsService, IUserService {
         return ServiceResult.success();
     }
 
-    // 根据用户名，查找用户信息
-    @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        return this.findUserByName(username);
-    }
 }

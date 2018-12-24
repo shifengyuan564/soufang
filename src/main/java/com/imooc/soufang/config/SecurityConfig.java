@@ -1,5 +1,8 @@
 package com.imooc.soufang.config;
 
+import com.imooc.soufang.security.AuthProvider;
+import com.imooc.soufang.security.LoginAuthFailHandler;
+import com.imooc.soufang.security.LoginUrlEntryPoint;
 import com.imooc.soufang.service.IUserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -25,7 +28,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Autowired
-    private UserDetailsService userService;
+    private UserDetailsService userDetailsService;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -36,11 +39,18 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     }
 
     @Bean
-    public AuthenticationProvider authenticationProvider() {
-        DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider();
-        authenticationProvider.setUserDetailsService(userService);
-        authenticationProvider.setPasswordEncoder(passwordEncoder); // 设置密码加密方式
-        return authenticationProvider;
+    public AuthProvider authProvider() {
+        return new AuthProvider();
+    }
+
+    @Bean
+    public LoginUrlEntryPoint urlEntryPoint() {
+        return new LoginUrlEntryPoint("/user/login");   // 默认使用用户的登录入口
+    }
+
+    @Bean
+    public LoginAuthFailHandler authFailHandler() {
+        return new LoginAuthFailHandler(urlEntryPoint());
     }
 
     /**
@@ -58,9 +68,14 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/user/**").hasAnyRole("ADMIN", "USER")
                 .antMatchers("/api/user/**").hasAnyRole("ADMIN","USER")
 
-                .and().formLogin().loginProcessingUrl("/login")   // 配置角色登录处理入口
-                .and().logout().logoutUrl("/logout").logoutSuccessUrl("/logout/page")
-        ;
+                .and().formLogin()
+                    .loginProcessingUrl("/login")       // 配置角色登录处理入口
+                    .failureHandler(authFailHandler())  // 登陆失败处理
+                .and().logout()
+                    .logoutUrl("/logout").logoutSuccessUrl("/logout/page")    // 处理登出是原生的/logout, 跳转页面是/logout/page
+                    .deleteCookies("JSESSIONID").invalidateHttpSession(true)    // 登出删除cookie，同时session会话失效
+                .and().exceptionHandling().authenticationEntryPoint(urlEntryPoint()).accessDeniedPage("/403");    // 处理异常，拒绝访问就重定向到 403 页面
+
 
         http.csrf().disable();
         http.headers().frameOptions().sameOrigin();
@@ -73,11 +88,13 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Autowired
     public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
 
-        auth.inMemoryAuthentication()
+        /*auth.inMemoryAuthentication()
                 .passwordEncoder(new BCryptPasswordEncoder())
                 .withUser("admin")
-                .password(new BCryptPasswordEncoder().encode("123456"))
-                .roles("ADMIN");
+                .password(new BCryptPasswordEncaoder().encode("123456"))
+                .roles("ADMIN");*/
+
+        auth.authenticationProvider(authProvider()).eraseCredentials(true);
     }
 
 }

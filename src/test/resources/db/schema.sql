@@ -14,8 +14,8 @@ CREATE TABLE `user` (
 
 DROP TABLE IF EXISTS `role`;
 CREATE TABLE `role` (
-  `id` INT(11) NOT NULL IDENTITY PRIMARY KEY ,
-  `user_id` INT(11) NOT NULL,
+  `id` BIGINT(11) NOT NULL IDENTITY PRIMARY KEY ,
+  `user_id` BIGINT(11) NOT NULL,
   `name` VARCHAR(32) NOT NULL,
   UNIQUE (`user_id`, `name`)
 );
@@ -24,7 +24,7 @@ CREATE INDEX ON `role`(`user_id`);
 
 DROP TABLE IF EXISTS `support_address`;
 CREATE TABLE `support_address` (
-  `id` int(11) NOT NULL IDENTITY,
+  `id` BIGINT(11) NOT NULL IDENTITY,
   `belong_to` VARCHAR(32) NOT NULL,
   `en_name` varchar(32) NOT NULL,
   `cn_name` varchar(32) NOT NULL,
@@ -38,7 +38,7 @@ CREATE INDEX ON `support_address` (`belong_to`,`en_name`,`level`);
 
 DROP TABLE IF EXISTS `house`;
 CREATE TABLE `house` (
-  `id` int(11)  NOT NULL IDENTITY COMMENT 'house唯一标识',
+  `id` BIGINT(11)  NOT NULL IDENTITY COMMENT 'house唯一标识',
   `title` varchar(32) NOT NULL,
   `price` int(11) NOT NULL COMMENT '价格',
   `area` int(11) NOT NULL COMMENT '面积',
@@ -65,7 +65,7 @@ CREATE TABLE `house` (
 
 DROP TABLE IF EXISTS `house_detail`;
 CREATE TABLE `house_detail` (
-  `id` int(11) NOT NULL IDENTITY,
+  `id` BIGINT(11) NOT NULL IDENTITY,
   `description` varchar(255) DEFAULT NULL COMMENT '详细描述',
   `layout_desc` varchar(255) DEFAULT NULL COMMENT '户型介绍',
   `traffic` varchar(255) DEFAULT NULL COMMENT '交通出行',
@@ -82,7 +82,7 @@ CREATE TABLE `house_detail` (
 
 DROP TABLE IF EXISTS `house_tag`;
 CREATE TABLE `house_tag` (
-  `house_id` int(11) NOT NULL COMMENT '房屋id',
+  `house_id` BIGINT(11) NOT NULL COMMENT '房屋id',
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT COMMENT '标签id',
   `name` varchar(32) NOT NULL,
   PRIMARY KEY (`id`)

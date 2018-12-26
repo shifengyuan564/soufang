@@ -6,7 +6,7 @@ import lombok.Setter;
 import java.util.List;
 
 /**
- * 通用多结果Service返回结构
+ * 通用 多结果Service返回结构
  * Created by 瓦力.
  */
 
@@ -14,6 +14,7 @@ import java.util.List;
 @Setter
 @Getter
 public class ServiceMultiResult<T> {
+
     private long total;
     private List<T> result;
 

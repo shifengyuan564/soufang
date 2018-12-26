@@ -5,6 +5,7 @@ package com.imooc.soufang.service;
  * Created by 瓦力.
  */
 public class ServiceResult<T> {
+
     private boolean success;
     private String message;
     private T result;

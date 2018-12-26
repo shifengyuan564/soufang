@@ -1,10 +1,14 @@
 package com.imooc.soufang.entity.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * Created by 瓦力.
  */
+@Setter
+@Getter
 public class HousePictureDTO {
     private Long id;
 
@@ -17,56 +21,7 @@ public class HousePictureDTO {
     private String cdnPrefix;
 
     private int width;
-
     private int height;
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Long getHouseId() {
-        return houseId;
-    }
-
-    public void setHouseId(Long houseId) {
-        this.houseId = houseId;
-    }
-
-    public String getPath() {
-        return path;
-    }
-
-    public void setPath(String path) {
-        this.path = path;
-    }
-
-    public String getCdnPrefix() {
-        return cdnPrefix;
-    }
-
-    public void setCdnPrefix(String cdnPrefix) {
-        this.cdnPrefix = cdnPrefix;
-    }
-
-    public int getWidth() {
-        return width;
-    }
-
-    public void setWidth(int width) {
-        this.width = width;
-    }
-
-    public int getHeight() {
-        return height;
-    }
-
-    public void setHeight(int height) {
-        this.height = height;
-    }
 
     @Override
     public String toString() {

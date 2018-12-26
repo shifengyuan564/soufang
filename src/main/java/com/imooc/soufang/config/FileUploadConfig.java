@@ -5,6 +5,7 @@ import com.qiniu.common.Zone;
 import com.qiniu.storage.BucketManager;
 import com.qiniu.storage.UploadManager;
 import com.qiniu.util.Auth;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -32,6 +33,7 @@ public class FileUploadConfig {
 
     private final MultipartProperties multipartProperties;
 
+    @Autowired
     public FileUploadConfig(MultipartProperties multipartProperties) {
         this.multipartProperties = multipartProperties;
     }

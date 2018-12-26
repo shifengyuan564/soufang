@@ -78,12 +78,14 @@ public class AddressServiceImpl implements IAddressService {
 
     @Override
     public ServiceMultiResult<SupportAddressDTO> findAllCities() {
+
         List<SupportAddress> addresses = supportAddressRepository.findAllByLevel(SupportAddress.Level.CITY.getValue());
         List<SupportAddressDTO> addressDTOS = new ArrayList<>();
-        for (SupportAddress supportAddress : addresses) {
-            SupportAddressDTO target = modelMapper.map(supportAddress, SupportAddressDTO.class);
+
+        addresses.forEach(addr -> {
+            SupportAddressDTO target = modelMapper.map(addr, SupportAddressDTO.class);
             addressDTOS.add(target);
-        }
+        });
 
         return new ServiceMultiResult<>(addressDTOS.size(), addressDTOS);
     }
@@ -92,8 +94,7 @@ public class AddressServiceImpl implements IAddressService {
     public Map<SupportAddress.Level, SupportAddressDTO> findCityAndRegion(String cityEnName, String regionEnName) {
         Map<SupportAddress.Level, SupportAddressDTO> result = new HashMap<>();
 
-        SupportAddress city = supportAddressRepository.findByEnNameAndLevel(cityEnName, SupportAddress.Level.CITY
-                .getValue());
+        SupportAddress city = supportAddressRepository.findByEnNameAndLevel(cityEnName, SupportAddress.Level.CITY.getValue());
         SupportAddress region = supportAddressRepository.findByEnNameAndBelongTo(regionEnName, city.getEnName());
 
         result.put(SupportAddress.Level.CITY, modelMapper.map(city, SupportAddressDTO.class));

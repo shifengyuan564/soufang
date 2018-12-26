@@ -11,6 +11,7 @@ import org.springframework.data.repository.query.Param;
  * Created by 瓦力.
  */
 public interface HouseRepository extends PagingAndSortingRepository<House, Long>, JpaSpecificationExecutor<House> {
+
     @Modifying
     @Query("update House as house set house.cover = :cover where house.id = :id")
     void updateCover(@Param(value = "id") Long id, @Param(value = "cover") String cover);

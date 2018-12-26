@@ -107,6 +107,7 @@ public class HouseServiceImpl implements IHouseService {
         List<String> tags = houseForm.getTags();
         if (tags != null && !tags.isEmpty()) {
             List<HouseTag> houseTags = new ArrayList<>();
+
             for (String tag : tags) {
                 houseTags.add(new HouseTag(house.getId(), tag));
             }
@@ -160,7 +161,7 @@ public class HouseServiceImpl implements IHouseService {
         List<HouseDTO> houseDTOS = new ArrayList<>();
 
         Sort sort = new Sort(Sort.Direction.fromString(searchBody.getDirection()), searchBody.getOrderBy());
-        int page = searchBody.getStart() / searchBody.getLength();
+        int page = searchBody.getStart() / searchBody.getLength();  // 偏移量 / pageSize = 第几页
 
         Pageable pageable = new PageRequest(page, searchBody.getLength(), sort);
 
@@ -584,6 +585,7 @@ public class HouseServiceImpl implements IHouseService {
      * @return
      */
     private List<HousePicture> generatePictures(HouseForm form, Long houseId) {
+
         List<HousePicture> pictures = new ArrayList<>();
         if (form.getPhotos() == null || form.getPhotos().isEmpty()) {
             return pictures;
@@ -608,6 +610,8 @@ public class HouseServiceImpl implements IHouseService {
      * @return
      */
     private ServiceResult<HouseDTO> wrapperDetailInfo(HouseDetail houseDetail, HouseForm houseForm) {
+
+        // 地铁
         Subway subway = subwayRepository.findById(houseForm.getSubwayLineId()).orElse(null);
         if (subway == null) {
             return new ServiceResult<>(false, "Not valid subway line!");

@@ -14,16 +14,16 @@ import java.util.Date;
 @Getter
 public class DatatableSearch {
     /**
-     * Datatables要求回显字段
+     * Datatables 要求回显字段
      */
     private int draw;
 
     /**
-     * Datatables规定分页字段
+     * Datatables 规定的分页字段
      */
     private int start;
     private int length;
-    private Integer status;
+    private Integer status; // int类型表示一定会传的，Integer可能不传，null代表所有的状态
 
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     private Date createTimeMin;

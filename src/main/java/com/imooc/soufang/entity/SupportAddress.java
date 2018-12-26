@@ -13,6 +13,7 @@ import javax.persistence.*;
 @Entity
 @Table(name = "support_address")
 public class SupportAddress {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -39,6 +40,7 @@ public class SupportAddress {
      * 行政级别定义
      */
     public enum Level {
+
         CITY("city"),
         REGION("region");
 

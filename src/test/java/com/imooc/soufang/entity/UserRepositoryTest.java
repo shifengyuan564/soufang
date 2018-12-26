@@ -20,13 +20,8 @@ public class UserRepositoryTest extends AppTests {
 
     @Test
     public void testFindOne(){
-
-        Optional<User> optional = userRepository.findById(1L);
-        if (optional.isPresent()) {
-            User user = optional.get();
-            System.out.println(user.getName());
-            Assert.assertEquals("waliwali", user.getName());
-        }
-
+        User user = userRepository.findById(1L).orElse(null);
+        System.out.println(user.getName());
+        Assert.assertEquals("wali", user.getName());
     }
 }

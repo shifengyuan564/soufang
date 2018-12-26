@@ -57,7 +57,7 @@ CREATE TABLE `house` (
   `distance_to_subway` int(11) NOT NULL DEFAULT '-1' COMMENT '距地铁距离 默认-1 附近无地铁',
   `parlour` int(11) NOT NULL DEFAULT '0' COMMENT '客厅数量',
   `district` varchar(32) NOT NULL COMMENT '所在小区',
-  `admin_id` int(11) NOT NULL COMMENT '所属管理员id',
+  `admin_id` BIGINT(11) NOT NULL COMMENT '所属管理员id',
   `bathroom` int(11) NOT NULL DEFAULT '0' COMMENT '卫生间数量',
   `street` varchar(32) NOT NULL COMMENT '街道',
   PRIMARY KEY (`id`)
@@ -72,18 +72,18 @@ CREATE TABLE `house_detail` (
   `round_service` varchar(255) DEFAULT NULL COMMENT '周边配套',
   `rent_way` int(2) NOT NULL COMMENT '租赁方式',
   `address` varchar(32) NOT NULL COMMENT '详细地址 ',
-  `subway_line_id` int(11) DEFAULT NULL COMMENT '附近地铁线id',
+  `subway_line_id` BIGINT(11) DEFAULT NULL COMMENT '附近地铁线id',
   `subway_line_name` varchar(32) DEFAULT NULL COMMENT '附近地铁线名称',
-  `subway_station_id` int(11) DEFAULT NULL COMMENT '地铁站id',
+  `subway_station_id` BIGINT(11) DEFAULT NULL COMMENT '地铁站id',
   `subway_station_name` varchar(32) DEFAULT NULL COMMENT '地铁站名',
-  `house_id` int(11) NOT NULL COMMENT '对应house的id',
+  `house_id` BIGINT(11) NOT NULL COMMENT '对应house的id',
   PRIMARY KEY (`id`)
 );
 
 DROP TABLE IF EXISTS `house_tag`;
 CREATE TABLE `house_tag` (
   `house_id` BIGINT(11) NOT NULL COMMENT '房屋id',
-  `id` int(11) unsigned NOT NULL AUTO_INCREMENT COMMENT '标签id',
+  `id` BIGINT(11) unsigned NOT NULL AUTO_INCREMENT COMMENT '标签id',
   `name` varchar(32) NOT NULL,
   PRIMARY KEY (`id`)
 );

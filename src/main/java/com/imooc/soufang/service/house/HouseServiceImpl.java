@@ -39,38 +39,37 @@ import java.util.*;
 @Service
 public class HouseServiceImpl implements IHouseService {
 
-    @Autowired
-    private ModelMapper modelMapper;
-
-    @Autowired
-    private HouseRepository houseRepository;
-
-    @Autowired
-    private HouseDetailRepository houseDetailRepository;
-
-    @Autowired
-    private HousePictureRepository housePictureRepository;
-
-    @Autowired
-    private HouseTagRepository houseTagRepository;
-
-    @Autowired
-    private SubwayRepository subwayRepository;
-
-    @Autowired
-    private SubwayStationRepository subwayStationRepository;
-
-    @Autowired
-    private HouseSubscribeRespository subscribeRespository;
-
-    @Autowired
-    private IQiNiuService qiNiuService;
-
-    @Autowired
-    private ISearchService searchService;
+    private final ModelMapper modelMapper;
+    private final HouseRepository houseRepository;
+    private final HouseDetailRepository houseDetailRepository;
+    private final HousePictureRepository housePictureRepository;
+    private final HouseTagRepository houseTagRepository;
+    private final SubwayRepository subwayRepository;
+    private final SubwayStationRepository subwayStationRepository;
+    private final HouseSubscribeRespository subscribeRespository;
+    private final IQiNiuService qiNiuService;
+    private final ISearchService searchService;
 
     @Value("${qiniu.cdn.prefix}")
     private String cdnPrefix;
+
+    @Autowired
+    public HouseServiceImpl(ModelMapper modelMapper, HouseRepository houseRepository,
+                            HouseDetailRepository houseDetailRepository, HousePictureRepository housePictureRepository,
+                            HouseTagRepository houseTagRepository, SubwayRepository subwayRepository,
+                            SubwayStationRepository subwayStationRepository, HouseSubscribeRespository subscribeRespository,
+                            IQiNiuService qiNiuService, ISearchService searchService) {
+        this.modelMapper = modelMapper;
+        this.houseRepository = houseRepository;
+        this.houseDetailRepository = houseDetailRepository;
+        this.housePictureRepository = housePictureRepository;
+        this.houseTagRepository = houseTagRepository;
+        this.subwayRepository = subwayRepository;
+        this.subwayStationRepository = subwayStationRepository;
+        this.subscribeRespository = subscribeRespository;
+        this.qiNiuService = qiNiuService;
+        this.searchService = searchService;
+    }
 
     @Override
     public ServiceResult<HouseDTO> save(HouseForm houseForm) {
@@ -93,7 +92,7 @@ public class HouseServiceImpl implements IHouseService {
         detail = houseDetailRepository.save(detail);
 
         List<HousePicture> pictures = generatePictures(houseForm, house.getId());
-        Iterable<HousePicture> housePictures = housePictureRepository.save(pictures);
+        Iterable<HousePicture> housePictures = housePictureRepository.saveAll(pictures);
 
         HouseDTO houseDTO = modelMapper.map(house, HouseDTO.class);
         HouseDetailDTO houseDetailDTO = modelMapper.map(detail, HouseDetailDTO.class);
@@ -111,7 +110,7 @@ public class HouseServiceImpl implements IHouseService {
             for (String tag : tags) {
                 houseTags.add(new HouseTag(house.getId(), tag));
             }
-            houseTagRepository.save(houseTags);
+            houseTagRepository.saveAll(houseTags);
             houseDTO.setTags(tags);
         }
 
@@ -121,7 +120,7 @@ public class HouseServiceImpl implements IHouseService {
     @Override
     @Transactional
     public ServiceResult update(HouseForm houseForm) {
-        House house = this.houseRepository.findOne(houseForm.getId());
+        House house = this.houseRepository.findById(houseForm.getId()).orElse(null);
         if (house == null) {
             return ServiceResult.notFound();
         }
@@ -139,7 +138,7 @@ public class HouseServiceImpl implements IHouseService {
         houseDetailRepository.save(detail);
 
         List<HousePicture> pictures = generatePictures(houseForm, houseForm.getId());
-        housePictureRepository.save(pictures);
+        housePictureRepository.saveAll(pictures);
 
         if (houseForm.getCover() == null) {
             houseForm.setCover(house.getCover());
@@ -204,7 +203,7 @@ public class HouseServiceImpl implements IHouseService {
 
     @Override
     public ServiceResult<HouseDTO> findCompleteOne(Long id) {
-        House house = houseRepository.findOne(id);
+        House house = houseRepository.findById(id).orElse(null);
         if (house == null) {
             return ServiceResult.notFound();
         }
@@ -243,7 +242,7 @@ public class HouseServiceImpl implements IHouseService {
 
     @Override
     public ServiceResult removePhoto(Long id) {
-        HousePicture picture = housePictureRepository.findOne(id);
+        HousePicture picture = housePictureRepository.findById(id).orElse(null);
         if (picture == null) {
             return ServiceResult.notFound();
         }
@@ -251,7 +250,7 @@ public class HouseServiceImpl implements IHouseService {
         try {
             Response response = this.qiNiuService.delete(picture.getPath());
             if (response.isOK()) {
-                housePictureRepository.delete(id);
+                housePictureRepository.deleteById(id);
                 return ServiceResult.success();
             } else {
                 return new ServiceResult(false, response.error);
@@ -265,7 +264,7 @@ public class HouseServiceImpl implements IHouseService {
     @Override
     @Transactional
     public ServiceResult updateCover(Long coverId, Long targetId) {
-        HousePicture cover = housePictureRepository.findOne(coverId);
+        HousePicture cover = housePictureRepository.findById(coverId).orElse(null);
         if (cover == null) {
             return ServiceResult.notFound();
         }
@@ -277,7 +276,7 @@ public class HouseServiceImpl implements IHouseService {
     @Override
     @Transactional
     public ServiceResult addTag(Long houseId, String tag) {
-        House house = houseRepository.findOne(houseId);
+        House house = houseRepository.findById(houseId).orElse(null);
         if (house == null) {
             return ServiceResult.notFound();
         }
@@ -294,7 +293,7 @@ public class HouseServiceImpl implements IHouseService {
     @Override
     @Transactional
     public ServiceResult removeTag(Long houseId, String tag) {
-        House house = houseRepository.findOne(houseId);
+        House house = houseRepository.findById(houseId).orElse(null);
         if (house == null) {
             return ServiceResult.notFound();
         }
@@ -304,14 +303,14 @@ public class HouseServiceImpl implements IHouseService {
             return new ServiceResult(false, "标签不存在");
         }
 
-        houseTagRepository.delete(houseTag.getId());
+        houseTagRepository.deleteById(houseTag.getId());
         return ServiceResult.success();
     }
 
     @Override
     @Transactional
     public ServiceResult updateStatus(Long id, int status) {
-        House house = houseRepository.findOne(id);
+        House house = houseRepository.findById(id).orElse(null);
         if (house == null) {
             return ServiceResult.notFound();
         }
@@ -343,7 +342,7 @@ public class HouseServiceImpl implements IHouseService {
         List<HouseDTO> result = new ArrayList<>();
 
         Map<Long, HouseDTO> idToHouseMap = new HashMap<>();
-        Iterable<House> houses = houseRepository.findAll(houseIds);
+        Iterable<House> houses = houseRepository.findAllById(houseIds);
         houses.forEach(house -> {
             HouseDTO houseDTO = modelMapper.map(house, HouseDTO.class);
             houseDTO.setCover(this.cdnPrefix + house.getCover());
@@ -405,7 +404,7 @@ public class HouseServiceImpl implements IHouseService {
             return new ServiceResult(false, "已加入预约");
         }
 
-        House house = houseRepository.findOne(houseId);
+        House house = houseRepository.findById(houseId).orElse(null);
         if (house == null) {
             return new ServiceResult(false, "查无此房");
         }
@@ -424,9 +423,8 @@ public class HouseServiceImpl implements IHouseService {
 
     @Override
     public ServiceMultiResult<Pair<HouseDTO, HouseSubscribeDTO>> querySubscribeList(
-            HouseSubscribeStatus status,
-            int start,
-            int size) {
+            HouseSubscribeStatus status, int start, int size) {
+
         Long userId = LoginUserUtil.getLoginUserId();
         Pageable pageable = new PageRequest(start / size, size, new Sort(Sort.Direction.DESC, "createTime"));
 
@@ -466,7 +464,7 @@ public class HouseServiceImpl implements IHouseService {
             return new ServiceResult(false, "无预约记录");
         }
 
-        subscribeRespository.delete(subscribe.getId());
+        subscribeRespository.deleteById(subscribe.getId());
         return ServiceResult.success();
     }
 
@@ -509,7 +507,7 @@ public class HouseServiceImpl implements IHouseService {
         });
 
         Map<Long, HouseDTO> idToHouseMap = new HashMap<>();
-        Iterable<House> houses = houseRepository.findAll(houseIds);
+        Iterable<House> houses = houseRepository.findAllById(houseIds);
         houses.forEach(house -> {
             idToHouseMap.put(house.getId(), modelMapper.map(house, HouseDTO.class));
         });
@@ -610,22 +608,20 @@ public class HouseServiceImpl implements IHouseService {
      * @return
      */
     private ServiceResult<HouseDTO> wrapperDetailInfo(HouseDetail houseDetail, HouseForm houseForm) {
-        Subway subway = subwayRepository.findOne(houseForm.getSubwayLineId());
+        Subway subway = subwayRepository.findById(houseForm.getSubwayLineId()).orElse(null);
         if (subway == null) {
             return new ServiceResult<>(false, "Not valid subway line!");
         }
 
-        SubwayStation subwayStation = subwayStationRepository.findOne(houseForm.getSubwayStationId());
+        SubwayStation subwayStation = subwayStationRepository.findById(houseForm.getSubwayStationId()).orElse(null);
         if (subwayStation == null || subway.getId() != subwayStation.getSubwayId()) {
             return new ServiceResult<>(false, "Not valid subway station!");
         }
 
         houseDetail.setSubwayLineId(subway.getId());
         houseDetail.setSubwayLineName(subway.getName());
-
         houseDetail.setSubwayStationId(subwayStation.getId());
         houseDetail.setSubwayStationName(subwayStation.getName());
-
         houseDetail.setDescription(houseForm.getDescription());
         houseDetail.setDetailAddress(houseForm.getDetailAddress());
         houseDetail.setLayoutDesc(houseForm.getLayoutDesc());
@@ -633,6 +629,5 @@ public class HouseServiceImpl implements IHouseService {
         houseDetail.setRoundService(houseForm.getRoundService());
         houseDetail.setTraffic(houseForm.getTraffic());
         return null;
-
     }
 }

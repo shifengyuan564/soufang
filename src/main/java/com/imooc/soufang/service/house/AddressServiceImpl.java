@@ -146,7 +146,7 @@ public class AddressServiceImpl implements IAddressService {
         if (subwayId == null) {
             return ServiceResult.notFound();
         }
-        Subway subway = subwayRepository.findById(subwayId).get();
+        Subway subway = subwayRepository.findById(subwayId).orElse(null);
         if (subway == null) {
             return ServiceResult.notFound();
         }
@@ -158,7 +158,7 @@ public class AddressServiceImpl implements IAddressService {
         if (stationId == null) {
             return ServiceResult.notFound();
         }
-        SubwayStation station = subwayStationRepository.findById(stationId).get();
+        SubwayStation station = subwayStationRepository.findById(stationId).orElse(null);
         if (station == null) {
             return ServiceResult.notFound();
         }
@@ -228,9 +228,8 @@ public class AddressServiceImpl implements IAddressService {
 
     @Override
     public ServiceResult lbsUpload(BaiduMapLocation location, String title,
-                                   String address,
-                                   long houseId, int price,
-                                   int area) {
+                                   String address, long houseId, int price, int area) {
+
         HttpClient httpClient = HttpClients.createDefault();
         List<NameValuePair> nvps = new ArrayList<>();
         nvps.add(new BasicNameValuePair("latitude", String.valueOf(location.getLatitude())));
@@ -282,6 +281,7 @@ public class AddressServiceImpl implements IAddressService {
         sb.append("geotable_id=").append("175730").append("&")
                 .append("ak=").append(BAIDU_MAP_KEY).append("&")
                 .append("houseId=").append(houseId).append(",").append(houseId);
+
         HttpGet get = new HttpGet(sb.toString());
         try {
             HttpResponse response = httpClient.execute(get);
@@ -298,11 +298,7 @@ public class AddressServiceImpl implements IAddressService {
                 return false;
             } else {
                 long size = jsonNode.get("size").asLong();
-                if (size > 0) {
-                    return true;
-                } else {
-                    return false;
-                }
+                return size > 0;
             }
         } catch (IOException e) {
             e.printStackTrace();

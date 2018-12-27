@@ -71,6 +71,7 @@ public class HouseServiceImpl implements IHouseService {
         this.searchService = searchService;
     }
 
+    @Transactional
     @Override
     public ServiceResult<HouseDTO> save(HouseForm houseForm) {
         HouseDetail detail = new HouseDetail();
@@ -118,8 +119,8 @@ public class HouseServiceImpl implements IHouseService {
         return new ServiceResult<HouseDTO>(true, null, houseDTO);
     }
 
-    @Override
     @Transactional
+    @Override
     public ServiceResult update(HouseForm houseForm) {
         House house = this.houseRepository.findById(houseForm.getId()).orElse(null);
         if (house == null) {
@@ -167,7 +168,7 @@ public class HouseServiceImpl implements IHouseService {
 
         Specification<House> specification = (root, query, cb) -> {
             Predicate predicate = cb.equal(root.get("adminId"), LoginUserUtil.getLoginUserId());
-            predicate = cb.and(predicate, cb.notEqual(root.get("status"), HouseStatus.DELETED.getValue()));
+            predicate = cb.and(predicate, cb.notEqual(root.get("status"), HouseStatus.DELETED.getValue())); // status != 3
 
             if (searchBody.getCity() != null) {
                 predicate = cb.and(predicate, cb.equal(root.get("cityEnName"), searchBody.getCity()));
@@ -262,8 +263,8 @@ public class HouseServiceImpl implements IHouseService {
         }
     }
 
-    @Override
     @Transactional
+    @Override
     public ServiceResult updateCover(Long coverId, Long targetId) {
         HousePicture cover = housePictureRepository.findById(coverId).orElse(null);
         if (cover == null) {
@@ -274,8 +275,8 @@ public class HouseServiceImpl implements IHouseService {
         return ServiceResult.success();
     }
 
-    @Override
     @Transactional
+    @Override
     public ServiceResult addTag(Long houseId, String tag) {
         House house = houseRepository.findById(houseId).orElse(null);
         if (house == null) {
@@ -291,8 +292,8 @@ public class HouseServiceImpl implements IHouseService {
         return ServiceResult.success();
     }
 
-    @Override
     @Transactional
+    @Override
     public ServiceResult removeTag(Long houseId, String tag) {
         House house = houseRepository.findById(houseId).orElse(null);
         if (house == null) {
@@ -308,8 +309,8 @@ public class HouseServiceImpl implements IHouseService {
         return ServiceResult.success();
     }
 
-    @Override
     @Transactional
+    @Override
     public ServiceResult updateStatus(Long id, int status) {
         House house = houseRepository.findById(id).orElse(null);
         if (house == null) {
@@ -396,8 +397,8 @@ public class HouseServiceImpl implements IHouseService {
         return new ServiceMultiResult<>(serviceResult.getTotal(), houses);
     }
 
-    @Override
     @Transactional
+    @Override
     public ServiceResult addSubscribeOrder(Long houseId) {
         Long userId = LoginUserUtil.getLoginUserId();
         HouseSubscribe subscribe = subscribeRespository.findByHouseIdAndUserId(houseId, userId);
@@ -434,8 +435,8 @@ public class HouseServiceImpl implements IHouseService {
         return wrapper(page);
     }
 
-    @Override
     @Transactional
+    @Override
     public ServiceResult subscribe(Long houseId, Date orderTime, String telephone, String desc) {
         Long userId = LoginUserUtil.getLoginUserId();
         HouseSubscribe subscribe = subscribeRespository.findByHouseIdAndUserId(houseId, userId);
@@ -456,8 +457,8 @@ public class HouseServiceImpl implements IHouseService {
         return ServiceResult.success();
     }
 
-    @Override
     @Transactional
+    @Override
     public ServiceResult cancelSubscribe(Long houseId) {
         Long userId = LoginUserUtil.getLoginUserId();
         HouseSubscribe subscribe = subscribeRespository.findByHouseIdAndUserId(houseId, userId);
@@ -479,8 +480,8 @@ public class HouseServiceImpl implements IHouseService {
         return wrapper(page);
     }
 
-    @Override
     @Transactional
+    @Override
     public ServiceResult finishSubscribe(Long houseId) {
         Long adminId = LoginUserUtil.getLoginUserId();
         HouseSubscribe subscribe = subscribeRespository.findByHouseIdAndAdminId(houseId, adminId);
@@ -571,11 +572,17 @@ public class HouseServiceImpl implements IHouseService {
             houseDTO.setHouseDetail(detailDTO);
         });
 
+        // 为idToHouseMap中的所有HouseDTO设置List<String> tags属性
         List<HouseTag> houseTags = houseTagRepository.findAllByHouseIdIn(houseIds);
-        houseTags.forEach(houseTag -> {
+
+        for(HouseTag tag : houseTags){
+            HouseDTO house = idToHouseMap.get(tag.getHouseId());
+            house.getTags().add(tag.getName());
+        }
+        /*houseTags.forEach(houseTag -> {
             HouseDTO house = idToHouseMap.get(houseTag.getHouseId());
             house.getTags().add(houseTag.getName());
-        });
+        });*/
     }
 
     /**

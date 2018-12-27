@@ -25,6 +25,13 @@ public interface IHouseService {
      */
     ServiceResult<HouseDTO> save(HouseForm houseForm);
 
+
+    /**
+     * 更新
+     *
+     * @param houseForm
+     * @return
+     */
     ServiceResult update(HouseForm houseForm);
 
     ServiceMultiResult<HouseDTO> adminQuery(DatatableSearch searchBody);

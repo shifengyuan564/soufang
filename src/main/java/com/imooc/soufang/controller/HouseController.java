@@ -121,8 +121,7 @@ public class HouseController {
 
     @GetMapping("rent/house")
     public String rentHousePage(@ModelAttribute RentSearch rentSearch,
-                                Model model, HttpSession session,
-                                RedirectAttributes redirectAttributes) {
+                                Model model, HttpSession session, RedirectAttributes redirectAttributes) {
         if (rentSearch.getCityEnName() == null) {
             String cityEnNameInSession = (String) session.getAttribute("cityEnName");
             if (cityEnNameInSession == null) {
@@ -147,6 +146,8 @@ public class HouseController {
             redirectAttributes.addAttribute("msg", "must_chose_city");
             return "redirect:/index";
         }
+
+        // =======================================================
 
         ServiceMultiResult<HouseDTO> serviceMultiResult = houseService.query(rentSearch);
 

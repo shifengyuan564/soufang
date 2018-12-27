@@ -32,4 +32,13 @@ public class MapSearch {
 
     private int start = 0;
     private int size = 5;
+
+
+    public int getStart() {
+        return start < 0 ? 0 : start;
+    }
+    public int getSize() {
+        return size > 100 ? 100 : size;
+    }
+
 }

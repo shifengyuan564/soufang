@@ -1,6 +1,8 @@
 package com.imooc.soufang.base;
 
 import com.google.common.collect.ImmutableMap;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.Map;
 
@@ -8,6 +10,8 @@ import java.util.Map;
  * 带区间的常用数值定义
  * Created by 瓦力.
  */
+@Setter
+@Getter
 public class RentValueBlock {
     /**
      * 价格区间定义
@@ -45,30 +49,6 @@ public class RentValueBlock {
     public RentValueBlock(String key, int min, int max) {
         this.key = key;
         this.min = min;
-        this.max = max;
-    }
-
-    public String getKey() {
-        return key;
-    }
-
-    public void setKey(String key) {
-        this.key = key;
-    }
-
-    public int getMin() {
-        return min;
-    }
-
-    public void setMin(int min) {
-        this.min = min;
-    }
-
-    public int getMax() {
-        return max;
-    }
-
-    public void setMax(int max) {
         this.max = max;
     }
 

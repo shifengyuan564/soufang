@@ -54,10 +54,10 @@ $(function () {
                 maxlength: 30
             },
             cityEnName: {
-                required: true,
+                required: true
             },
             regionEnName: {
-                required: true,
+                required: true
             },
             street: {
                 required: true

@@ -43,6 +43,11 @@ public class HouseDTO implements Serializable {
     private List<HousePictureDTO> pictures;
     private int subscribeStatus;
 
+    // 覆盖lombok
+    public List<String> getTags() {
+        return tags == null ? new ArrayList<>() : tags;
+    }
+
     @Override
     public String toString() {
         return "HouseDTO{" +

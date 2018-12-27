@@ -11,13 +11,13 @@ import java.util.Set;
  * Created by 瓦力.
  */
 public class HouseSort {
-    public static final String DEFAULT_SORT_KEY = "lastUpdateTime";
 
+    public static final String DEFAULT_SORT_KEY = "lastUpdateTime";
     public static final String DISTANCE_TO_SUBWAY_KEY = "distanceToSubway";
 
 
     private static final Set<String> SORT_KEYS = Sets.newHashSet(
-        DEFAULT_SORT_KEY,
+            DEFAULT_SORT_KEY,
             "createTime",
             "price",
             "area",

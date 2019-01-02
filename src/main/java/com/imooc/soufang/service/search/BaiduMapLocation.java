@@ -6,7 +6,6 @@ import lombok.Setter;
 
 /**
  * 百度位置信息
- * Created by 瓦力.
  */
 @Setter
 @Getter

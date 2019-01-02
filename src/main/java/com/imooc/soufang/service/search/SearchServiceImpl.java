@@ -10,6 +10,7 @@ import com.imooc.soufang.repository.SupportAddressRepository;
 import com.imooc.soufang.service.ServiceMultiResult;
 import com.imooc.soufang.service.ServiceResult;
 import com.imooc.soufang.service.house.IAddressService;
+import lombok.extern.slf4j.Slf4j;
 import org.elasticsearch.client.transport.TransportClient;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
@@ -25,6 +26,7 @@ import java.util.List;
  * @Description:
  */
 @Service
+@Slf4j
 public class SearchServiceImpl implements ISearchService {
 
     private static final Logger logger = LoggerFactory.getLogger(ISearchService.class);

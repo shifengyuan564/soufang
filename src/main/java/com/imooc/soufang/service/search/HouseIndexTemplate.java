@@ -8,8 +8,7 @@ import java.util.List;
 
 /**
  *
- * 索引结构模板
- * Created by 瓦力.
+ * ES 索引结构模板
  */
 @Setter
 @Getter

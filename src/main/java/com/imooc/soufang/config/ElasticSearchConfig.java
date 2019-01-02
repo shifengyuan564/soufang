@@ -29,22 +29,19 @@ public class ElasticSearchConfig {
 
     @PostConstruct
     void init() {
-        System.setProperty("es.set.netty.runtime.available.processors", "false");
+        System.setProperty("es.set.netty.runtime.available.processors", "false");   // 不加启动会报错
     }
 
     @Bean
     public TransportClient esClient() throws UnknownHostException {
+
         Settings settings = Settings.builder()
                 .put("cluster.name", this.esName)
                 .put("client.transport.sniff", true)
                 .build();
 
-        InetSocketTransportAddress master = new InetSocketTransportAddress(
-            InetAddress.getByName(esHost), esPort
-        );
-
+        InetSocketTransportAddress master = new InetSocketTransportAddress(InetAddress.getByName(esHost), esPort);
         TransportClient client = new PreBuiltTransportClient(settings).addTransportAddress(master);
-
         return client;
     }
 }

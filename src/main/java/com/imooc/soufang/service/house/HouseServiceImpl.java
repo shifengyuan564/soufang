@@ -150,6 +150,7 @@ public class HouseServiceImpl implements IHouseService {
         house.setLastUpdateTime(new Date());
         houseRepository.save(house);
 
+        // 触发ES的索引操作
         if (house.getStatus() == HouseStatus.PASSES.getValue()) {
             searchService.index(house.getId());
         }
@@ -331,7 +332,7 @@ public class HouseServiceImpl implements IHouseService {
 
         houseRepository.updateStatus(id, status);
 
-        // 上架更新索引 其他情况都要删除索引
+        // 上架(通过审核) 更新索引 其他情况都要删除索引
         if (status == HouseStatus.PASSES.getValue()) {
             searchService.index(id);
         } else {

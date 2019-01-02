@@ -10,6 +10,7 @@ import com.imooc.soufang.repository.SupportAddressRepository;
 import com.imooc.soufang.service.ServiceMultiResult;
 import com.imooc.soufang.service.ServiceResult;
 import com.imooc.soufang.service.house.IAddressService;
+import org.elasticsearch.client.transport.TransportClient;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,9 +30,7 @@ public class SearchServiceImpl implements ISearchService {
     private static final Logger logger = LoggerFactory.getLogger(ISearchService.class);
 
     private static final String INDEX_NAME = "xunwu";
-
     private static final String INDEX_TYPE = "house";
-
     private static final String INDEX_TOPIC = "house_build";
 
     private final HouseRepository houseRepository;
@@ -41,11 +40,13 @@ public class SearchServiceImpl implements ISearchService {
     private final IAddressService addressService;
     private final ModelMapper modelMapper;
     private final ObjectMapper objectMapper;
+    private final TransportClient esClient;
 
     @Autowired
     public SearchServiceImpl(HouseRepository houseRepository, HouseDetailRepository houseDetailRepository,
                              HouseTagRepository tagRepository, SupportAddressRepository supportAddressRepository,
-                             IAddressService addressService, ModelMapper modelMapper, ObjectMapper objectMapper) {
+                             IAddressService addressService, ModelMapper modelMapper, ObjectMapper objectMapper,
+                             TransportClient esClient) {
         this.houseRepository = houseRepository;
         this.houseDetailRepository = houseDetailRepository;
         this.tagRepository = tagRepository;
@@ -53,6 +54,7 @@ public class SearchServiceImpl implements ISearchService {
         this.addressService = addressService;
         this.modelMapper = modelMapper;
         this.objectMapper = objectMapper;
+        this.esClient = esClient;
     }
 
     @Override

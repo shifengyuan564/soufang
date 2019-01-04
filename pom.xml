@@ -102,6 +102,11 @@
             <version>${elasticsearch.version}</version>
         </dependency>
 
+        <!-- Kafka -->
+        <dependency>
+            <groupId>org.springframework.kafka</groupId>
+            <artifactId>spring-kafka</artifactId>
+        </dependency>
 
         <!-- redis session依赖 -->
         <dependency>

@@ -354,7 +354,7 @@ public class HouseServiceImpl implements IHouseService {
 
         wrapperHouseList(houseIds, idToHouseMap);
 
-        // 矫正顺序
+        // 矫正顺序 (ES查出的顺序与MySql不一致)
         for (Long houseId : houseIds) {
             result.add(idToHouseMap.get(houseId));
         }
@@ -363,6 +363,8 @@ public class HouseServiceImpl implements IHouseService {
 
     @Override
     public ServiceMultiResult<HouseDTO> query(RentSearch rentSearch) {
+
+        // 先查ES
         if (rentSearch.getKeywords() != null && !rentSearch.getKeywords().isEmpty()) {
             ServiceMultiResult<Long> serviceResult = searchService.query(rentSearch);
             if (serviceResult.getTotal() == 0) {
@@ -372,6 +374,7 @@ public class HouseServiceImpl implements IHouseService {
             return new ServiceMultiResult<>(serviceResult.getTotal(), wrapperHouseResult(serviceResult.getResult()));
         }
 
+        // mysql
         return simpleQuery(rentSearch);
 
     }
@@ -580,10 +583,7 @@ public class HouseServiceImpl implements IHouseService {
             HouseDTO house = idToHouseMap.get(tag.getHouseId());
             house.getTags().add(tag.getName());
         }
-        /*houseTags.forEach(houseTag -> {
-            HouseDTO house = idToHouseMap.get(houseTag.getHouseId());
-            house.getTags().add(houseTag.getName());
-        });*/
+
     }
 
     /**

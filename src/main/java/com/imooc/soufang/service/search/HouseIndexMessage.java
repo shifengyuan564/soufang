@@ -4,7 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 /**
- * Created by 瓦力.
+ * 消息
  */
 @Setter
 @Getter
@@ -12,7 +12,6 @@ public class HouseIndexMessage {
 
     public static final String INDEX = "index";
     public static final String REMOVE = "remove";
-
     public static final int MAX_RETRY = 3;
 
     private Long houseId;

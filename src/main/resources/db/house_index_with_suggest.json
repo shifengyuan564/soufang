@@ -62,7 +62,7 @@
           "analyzer": "ik_smart",
           "search_analyzer": "ik_smart"
         },
-        "layoutDesc" : {
+        "layoutDesc": {
           "type": "text",
           "index": "analyzed",
           "analyzer": "ik_smart",

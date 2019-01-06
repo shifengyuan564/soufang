@@ -98,17 +98,20 @@ public class SearchServiceImpl implements ISearchService {
         this.kafkaTemplate = kafkaTemplate;
     }
 
+    // Kafka 消费者
     @KafkaListener(topics = KAFKA_INDEX_TOPIC)
     private void handleMessage(String content) {
         try {
+            // 消息反序列化
             HouseIndexMessage message = objectMapper.readValue(content, HouseIndexMessage.class);
 
+            // 判断操作类型
             switch (message.getOperation()) {
                 case HouseIndexMessage.INDEX:
-                    this.createOrUpdateIndex(message);
+                    this.createOrUpdateIndex(message);  // 创建或更新索引
                     break;
                 case HouseIndexMessage.REMOVE:
-                    this.removeIndex(message);
+                    this.removeIndex(message);  // 删除索引
                     break;
                 default:
                     log.warn("Not support message content " + content);
@@ -122,10 +125,10 @@ public class SearchServiceImpl implements ISearchService {
     private void createOrUpdateIndex(HouseIndexMessage message) {
         Long houseId = message.getHouseId();
 
-        House house = houseRepository.findById(houseId).orElse(null);
+        House house = houseRepository.findById(houseId).orElse(null);   // 从DB查询 House
         if (house == null) {
             log.error("Index house {} dose not exist!", houseId);
-            this.index(houseId, message.getRetry() + 1);
+            this.index(houseId, message.getRetry() + 1);    // kafka 发消息
             return;
         }
 
@@ -157,6 +160,7 @@ public class SearchServiceImpl implements ISearchService {
             indexTemplate.setTags(tagStrings);
         }
 
+        // term精确查询houseId
         SearchRequestBuilder requestBuilder = this.esClient.prepareSearch(ES_INDEX_NAME)
                 .setTypes(ES_INDEX_TYPE)
                 .setQuery(QueryBuilders.termQuery(HouseIndexKey.HOUSE_ID, houseId));
@@ -222,6 +226,7 @@ public class SearchServiceImpl implements ISearchService {
         }
 
         HouseIndexMessage message = new HouseIndexMessage(houseId, HouseIndexMessage.INDEX, retry);
+
         try {
             kafkaTemplate.send(KAFKA_INDEX_TOPIC, objectMapper.writeValueAsString(message));
         } catch (JsonProcessingException e) {
@@ -230,27 +235,27 @@ public class SearchServiceImpl implements ISearchService {
 
     }
 
+    // 插入数据
     private boolean create(HouseIndexTemplate indexTemplate) {
-        if (!updateSuggest(indexTemplate)) {
+        if (!updateSuggest(indexTemplate)) {    // 设置 HouseIndexTemplate 的 suggest 属性
             return false;
         }
 
         try {
+            // ES插入一条数据
             IndexResponse response = this.esClient.prepareIndex(ES_INDEX_NAME, ES_INDEX_TYPE)
                     .setSource(objectMapper.writeValueAsBytes(indexTemplate), XContentType.JSON).get();
 
-            log.debug("Create index with house: " + indexTemplate.getHouseId());
-            if (response.status() == RestStatus.CREATED) {
-                return true;
-            } else {
-                return false;
-            }
+            log.debug("创建 index with house: " + indexTemplate.getHouseId());
+            return response.status() == RestStatus.CREATED;
+
         } catch (JsonProcessingException e) {
             log.error("Error to index house " + indexTemplate.getHouseId(), e);
             return false;
         }
     }
 
+    // 更新数据
     private boolean update(String esId, HouseIndexTemplate indexTemplate) {
         if (!updateSuggest(indexTemplate)) {
             return false;
@@ -260,7 +265,7 @@ public class SearchServiceImpl implements ISearchService {
             UpdateResponse response = this.esClient.prepareUpdate(ES_INDEX_NAME, ES_INDEX_TYPE, esId)
                     .setDoc(objectMapper.writeValueAsBytes(indexTemplate), XContentType.JSON).get();
 
-            log.debug("Update index with house: " + indexTemplate.getHouseId());
+            log.debug("更新 index with house: " + indexTemplate.getHouseId());
             return response.status() == RestStatus.OK;
 
         } catch (JsonProcessingException e) {
@@ -269,6 +274,7 @@ public class SearchServiceImpl implements ISearchService {
         }
     }
 
+    // 删除并插入数据
     private boolean deleteAndCreate(long totalHit, HouseIndexTemplate indexTemplate) {
         DeleteByQueryRequestBuilder builder = DeleteByQueryAction.INSTANCE.newRequestBuilder(esClient)
                 .filter(QueryBuilders.termQuery(HouseIndexKey.HOUSE_ID, indexTemplate.getHouseId()))
@@ -294,29 +300,22 @@ public class SearchServiceImpl implements ISearchService {
 
     @Override
     public ServiceMultiResult<Long> query(RentSearch rentSearch) {
+
         BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
 
         // 搜索条件
-        boolQuery.filter(
-            QueryBuilders.termQuery(HouseIndexKey.CITY_EN_NAME, rentSearch.getCityEnName())
-        );
+        boolQuery.filter(QueryBuilders.termQuery(HouseIndexKey.CITY_EN_NAME, rentSearch.getCityEnName()));
 
         if (rentSearch.getRegionEnName() != null && !"*".equals(rentSearch.getRegionEnName())) {
-            boolQuery.filter(
-                QueryBuilders.termQuery(HouseIndexKey.REGION_EN_NAME, rentSearch.getRegionEnName())
-            );
+            boolQuery.filter(QueryBuilders.termQuery(HouseIndexKey.REGION_EN_NAME, rentSearch.getRegionEnName()));
         }
 
         // 面积
         RentValueBlock area = RentValueBlock.matchArea(rentSearch.getAreaBlock());
         if (!RentValueBlock.ALL.equals(area)) {
             RangeQueryBuilder rangeQueryBuilder = QueryBuilders.rangeQuery(HouseIndexKey.AREA);
-            if (area.getMax() > 0) {
-                rangeQueryBuilder.lte(area.getMax());
-            }
-            if (area.getMin() > 0) {
-                rangeQueryBuilder.gte(area.getMin());
-            }
+            if (area.getMax() > 0) { rangeQueryBuilder.lte(area.getMax()); }
+            if (area.getMin() > 0) { rangeQueryBuilder.gte(area.getMin()); }
             boolQuery.filter(rangeQueryBuilder);
         }
 
@@ -324,44 +323,29 @@ public class SearchServiceImpl implements ISearchService {
         RentValueBlock price = RentValueBlock.matchPrice(rentSearch.getPriceBlock());
         if (!RentValueBlock.ALL.equals(price)) {
             RangeQueryBuilder rangeQuery = QueryBuilders.rangeQuery(HouseIndexKey.PRICE);
-            if (price.getMax() > 0) {
-                rangeQuery.lte(price.getMax());
-            }
-            if (price.getMin() > 0) {
-                rangeQuery.gte(price.getMin());
-            }
+            if (price.getMax() > 0) { rangeQuery.lte(price.getMax()); }
+            if (price.getMin() > 0) { rangeQuery.gte(price.getMin()); }
             boolQuery.filter(rangeQuery);
         }
 
         // 朝向
         if (rentSearch.getDirection() > 0) {
-            boolQuery.filter(
-                QueryBuilders.termQuery(HouseIndexKey.DIRECTION, rentSearch.getDirection())
-            );
+            boolQuery.filter(QueryBuilders.termQuery(HouseIndexKey.DIRECTION, rentSearch.getDirection()));
         }
-
         // 租赁方式
         if (rentSearch.getRentWay() > -1) {
-            boolQuery.filter(
-                QueryBuilders.termQuery(HouseIndexKey.RENT_WAY, rentSearch.getRentWay())
-            );
+            boolQuery.filter(QueryBuilders.termQuery(HouseIndexKey.RENT_WAY, rentSearch.getRentWay()));
         }
 
-        // 提高title权重到2.0
-//        boolQuery.must(
-//                QueryBuilders.matchQuery(HouseIndexKey.TITLE, rentSearch.getKeywords())
-//                        .boost(2.0f)
-//        );
-
+        // 优化：提高title权重到2.0，默认是1.0
+        // boolQuery.must(QueryBuilders.matchQuery(HouseIndexKey.TITLE, rentSearch.getKeywords()).boost(2.0f));
         boolQuery.must(
                 QueryBuilders.multiMatchQuery(rentSearch.getKeywords(),
                         HouseIndexKey.TITLE,
-                        HouseIndexKey.TRAFFIC,
-                        HouseIndexKey.DISTRICT,
-                        HouseIndexKey.ROUND_SERVICE,
-                        HouseIndexKey.SUBWAY_LINE_NAME,
-                        HouseIndexKey.SUBWAY_STATION_NAME
-                ));
+                        HouseIndexKey.TRAFFIC, HouseIndexKey.DISTRICT,HouseIndexKey.ROUND_SERVICE,
+                        HouseIndexKey.SUBWAY_LINE_NAME, HouseIndexKey.SUBWAY_STATION_NAME
+                )
+        );
 
         // ES只用来查id，再用id查mysql
         SearchRequestBuilder requestBuilder = this.esClient.prepareSearch(ES_INDEX_NAME)
@@ -375,7 +359,7 @@ public class SearchServiceImpl implements ISearchService {
                 .setSize(rentSearch.getSize())
                 .setFetchSource(HouseIndexKey.HOUSE_ID, null);  // 避免全部字段都返回，只需要house_id
 
-        log.debug(requestBuilder.toString());   // 调试用，打印
+        log.debug("【query】：\n"+requestBuilder.toString());   // 调试用，打印
 
         List<Long> houseIds = new ArrayList<>();
         SearchResponse response = requestBuilder.get();
@@ -392,6 +376,7 @@ public class SearchServiceImpl implements ISearchService {
         return new ServiceMultiResult<>(response.getHits().totalHits, houseIds);
     }
 
+    // 自动补全接口
     @Override
     public ServiceResult<List<String>> suggest(String prefix) {
 
@@ -399,13 +384,13 @@ public class SearchServiceImpl implements ISearchService {
         CompletionSuggestionBuilder suggestion = SuggestBuilders.completionSuggestion("suggest").prefix(prefix).size(5);
 
         SuggestBuilder suggestBuilder = new SuggestBuilder();
-        suggestBuilder.addSuggestion("autocomplete", suggestion);
+        suggestBuilder.addSuggestion("autocomplete", suggestion);   // autocomplete是随便起的
 
         SearchRequestBuilder requestBuilder = this.esClient.prepareSearch(ES_INDEX_NAME)
                 .setTypes(ES_INDEX_TYPE)
                 .suggest(suggestBuilder);
 
-        log.debug(requestBuilder.toString());
+        log.debug("【suggest】:"+requestBuilder.toString());   // 方便调试
 
         SearchResponse response = requestBuilder.get();
         Suggest suggest = response.getSuggest();
@@ -444,10 +429,54 @@ public class SearchServiceImpl implements ISearchService {
         return ServiceResult.of(suggests);  // 放入结果
     }
 
+    // 每次create(), update()时候调用
+    private boolean updateSuggest(HouseIndexTemplate indexTemplate) {
+
+        // 分词接口
+        AnalyzeRequestBuilder requestBuilder = new AnalyzeRequestBuilder(
+                this.esClient, AnalyzeAction.INSTANCE, ES_INDEX_NAME,
+                indexTemplate.getTitle(), indexTemplate.getLayoutDesc(), indexTemplate.getRoundService(),
+                indexTemplate.getDescription(), indexTemplate.getSubwayLineName(),indexTemplate.getSubwayStationName()
+        );
+
+        // 设置分词器
+        requestBuilder.setAnalyzer("ik_smart");
+
+
+        // 获取分词结果，token是每个词
+        AnalyzeResponse response = requestBuilder.get();
+        List<AnalyzeResponse.AnalyzeToken> tokens = response.getTokens();
+        if (tokens == null) {   // 无法分词
+            log.warn("Can not analyze token for house: " + indexTemplate.getHouseId());
+            return false;
+        }
+
+        List<HouseSuggest> suggests = new ArrayList<>();
+        for (AnalyzeResponse.AnalyzeToken token : tokens) { // 遍历分词
+            // 排除数字类型 & 小于2个字符的分词结果（一个字符没啥意义）
+            if ("<NUM>".equals(token.getType()) || token.getTerm().length() < 2) {
+                continue;
+            }
+
+            HouseSuggest suggest = new HouseSuggest();
+            suggest.setInput(token.getTerm());  // TODO: 权重  ?
+            suggests.add(suggest);
+        }
+
+        // 定制化小区自动补全 （小区名不需要分词）
+        HouseSuggest suggest = new HouseSuggest();
+        suggest.setInput(indexTemplate.getDistrict());
+        suggests.add(suggest);
+
+        indexTemplate.setSuggest(suggests);
+        return true;
+    }
+
+    // 聚合
     @Override
     public ServiceResult<Long> aggregateDistrictHouse(String cityEnName, String regionEnName, String district) {
 
-        // 建立查询条件
+        // 设定查询范围，在该范围内进行下一步的聚合
         BoolQueryBuilder boolQuery = QueryBuilders.boolQuery()
                 .filter(QueryBuilders.termQuery(HouseIndexKey.CITY_EN_NAME, cityEnName))
                 .filter(QueryBuilders.termQuery(HouseIndexKey.REGION_EN_NAME, regionEnName))
@@ -457,17 +486,17 @@ public class SearchServiceImpl implements ISearchService {
         SearchRequestBuilder requestBuilder = this.esClient.prepareSearch(ES_INDEX_NAME)
                 .setTypes(ES_INDEX_TYPE)
                 .setQuery(boolQuery)
-                .addAggregation(    // 小区名 agg_district 聚合
+                .addAggregation(    // 对小区名聚合（agg_district）
                         AggregationBuilders.terms(HouseIndexKey.AGG_DISTRICT).field(HouseIndexKey.DISTRICT)
                 ).setSize(0);   // 不需要原始数据，只需要聚合数据
 
-        log.debug(requestBuilder.toString());
+        log.debug("【aggregateDistrictHouse】："+requestBuilder.toString());   // TODO: ?
 
         SearchResponse response = requestBuilder.get();
         if (response.status() == RestStatus.OK) {
             Terms terms = response.getAggregations().get(HouseIndexKey.AGG_DISTRICT);   // 先获取聚合，再获取聚合名字
             if (terms.getBuckets() != null && !terms.getBuckets().isEmpty()) {
-                return ServiceResult.of(terms.getBucketByKey(district).getDocCount());
+                return ServiceResult.of(terms.getBucketByKey(district).getDocCount());  // district 小区名
             }
         } else {
             log.warn("Failed to Aggregate for " + HouseIndexKey.AGG_DISTRICT);  // 聚合失败
@@ -488,7 +517,7 @@ public class SearchServiceImpl implements ISearchService {
                 .setQuery(boolQuery)
                 .addAggregation(aggBuilder);
 
-        log.debug(requestBuilder.toString());
+        log.debug("【mapAggregate】"+requestBuilder.toString());
 
         SearchResponse response = requestBuilder.get();
         List<HouseBucketDTO> buckets = new ArrayList<>();
@@ -566,47 +595,7 @@ public class SearchServiceImpl implements ISearchService {
         return new ServiceMultiResult<>(response.getHits().getTotalHits(), houseIds);
     }
 
-    // 自动补全
-    private boolean updateSuggest(HouseIndexTemplate indexTemplate) {
 
-        // 分词接口
-        AnalyzeRequestBuilder requestBuilder = new AnalyzeRequestBuilder(
-                this.esClient, AnalyzeAction.INSTANCE, ES_INDEX_NAME, indexTemplate.getTitle(),
-                indexTemplate.getLayoutDesc(), indexTemplate.getRoundService(),
-                indexTemplate.getDescription(), indexTemplate.getSubwayLineName(),
-                indexTemplate.getSubwayStationName());
-
-        // 设置分词
-        requestBuilder.setAnalyzer("ik_smart");
-
-        // 获取分词结果
-        AnalyzeResponse response = requestBuilder.get();
-        List<AnalyzeResponse.AnalyzeToken> tokens = response.getTokens();
-        if (tokens == null) {   // 无法分词
-            log.warn("Can not analyze token for house: " + indexTemplate.getHouseId());
-            return false;
-        }
-
-        List<HouseSuggest> suggests = new ArrayList<>();
-        for (AnalyzeResponse.AnalyzeToken token : tokens) { // 遍历分词
-            // 排序数字类型 & 小于2个字符的分词结果
-            if ("<NUM>".equals(token.getType()) || token.getTerm().length() < 2) {
-                continue;
-            }
-
-            HouseSuggest suggest = new HouseSuggest();
-            suggest.setInput(token.getTerm());  // 权重
-            suggests.add(suggest);
-        }
-
-        // 定制化小区自动补全 （小区名不需要分词）
-        HouseSuggest suggest = new HouseSuggest();
-        suggest.setInput(indexTemplate.getDistrict());
-        suggests.add(suggest);
-
-        indexTemplate.setSuggest(suggests);
-        return true;
-    }
 
     private void remove(Long houseId, int retry) {
         if (retry > HouseIndexMessage.MAX_RETRY) {

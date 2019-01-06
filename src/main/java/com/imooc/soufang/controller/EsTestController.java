@@ -124,6 +124,61 @@ public class EsTestController {
         }
     }
 
+/*
+{
+  "from" : 0,
+  "size" : 10,
+  "query" : {
+    "bool" : {
+      "must" : [
+        {
+          "match" : {
+            "author" : {
+              "query" : "金庸",
+              "operator" : "OR",
+              "prefix_length" : 0,
+              "max_expansions" : 50,
+              "fuzzy_transpositions" : true,
+              "lenient" : false,
+              "zero_terms_query" : "NONE",
+              "boost" : 1.0
+            }
+          }
+        },
+        {
+          "match" : {
+            "title" : {
+              "query" : "笑傲江湖",
+              "operator" : "OR",
+              "prefix_length" : 0,
+              "max_expansions" : 50,
+              "fuzzy_transpositions" : true,
+              "lenient" : false,
+              "zero_terms_query" : "NONE",
+              "boost" : 1.0
+            }
+          }
+        }
+      ],
+      "filter" : [
+        {
+          "range" : {
+            "word_count" : {
+              "from" : 555,
+              "to" : 2000,
+              "include_lower" : true,
+              "include_upper" : true,
+              "boost" : 1.0
+            }
+          }
+        }
+      ],
+      "disable_coord" : false,
+      "adjust_pure_negative" : true,
+      "boost" : 1.0
+    }
+  }
+}*/
     @PostMapping("/query/book/novel")
     @ResponseBody
     public ResponseEntity query(@RequestParam(name = "author", required = false) String author,

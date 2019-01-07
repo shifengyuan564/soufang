@@ -505,6 +505,7 @@ public class SearchServiceImpl implements ISearchService {
         return ServiceResult.of(0L);
     }
 
+    // 以城市为单位，聚合该city下所有region的数据集
     @Override
     public ServiceMultiResult<HouseBucketDTO> mapAggregate(String cityEnName) {
         BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();

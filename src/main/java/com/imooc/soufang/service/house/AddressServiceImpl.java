@@ -50,7 +50,7 @@ public class AddressServiceImpl implements IAddressService {
     private final ModelMapper modelMapper;
     private final ObjectMapper objectMapper;
 
-    private static final String BAIDU_MAP_KEY = "6QtSF673D1pYl3eQkEXfwp8ZgsQpB77U";
+    private static final String BAIDU_MAP_KEY = "dSU6x5MSlLku2P9GzYtvgwcN9T7vV0Sa";
 
     private static final String BAIDU_MAP_GEOCONV_API = "http://api.map.baidu.com/geocoder/v2/?";
 

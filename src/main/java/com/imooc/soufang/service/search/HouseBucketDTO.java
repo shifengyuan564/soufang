@@ -9,15 +9,9 @@ import lombok.Setter;
 @Setter
 @Getter
 public class HouseBucketDTO {
-    /**
-     * 聚合bucket的key
-     */
-    private String key;
 
-    /**
-     * 聚合结果值
-     */
-    private long count;
+    private String key; // 聚合bucket的key
+    private long count; // 聚合结果值
 
     public HouseBucketDTO(String key, long count) {
         this.key = key;

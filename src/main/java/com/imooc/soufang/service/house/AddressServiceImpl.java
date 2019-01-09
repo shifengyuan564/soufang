@@ -110,8 +110,7 @@ public class AddressServiceImpl implements IAddressService {
 
         List<SupportAddressDTO> result = new ArrayList<>();
 
-        List<SupportAddress> regions = supportAddressRepository.findAllByLevelAndBelongTo(SupportAddress.Level.REGION
-                .getValue(), cityName);
+        List<SupportAddress> regions = supportAddressRepository.findAllByLevelAndBelongTo(SupportAddress.Level.REGION.getValue(), cityName);
         for (SupportAddress region : regions) {
             result.add(modelMapper.map(region, SupportAddressDTO.class));
         }

@@ -78,7 +78,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
 
         http.csrf().disable();
-        http.headers().frameOptions().sameOrigin();
+        http.headers().frameOptions().sameOrigin();     // 同源策略
 
     }
 
@@ -94,7 +94,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .password(new BCryptPasswordEncaoder().encode("123456"))
                 .roles("ADMIN");*/
 
-        auth.authenticationProvider(authProvider()).eraseCredentials(true);
+        auth.authenticationProvider(authProvider()).eraseCredentials(true); // 擦除密码
     }
 
 }

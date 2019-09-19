@@ -10,7 +10,6 @@ import java.io.IOException;
 
 /**
  * 登录验证失败处理器
- * Created by 瓦力.
  */
 public class LoginAuthFailHandler extends SimpleUrlAuthenticationFailureHandler {
 
@@ -23,6 +22,7 @@ public class LoginAuthFailHandler extends SimpleUrlAuthenticationFailureHandler 
     @Override
     public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response,
                                         AuthenticationException exception) throws IOException, ServletException {
+        // 获取的跳转的URL
         String targetUrl = this.urlEntryPoint.determineUrlToUseForThisRequest(request, response, exception);
 
         targetUrl += "?" + exception.getMessage();

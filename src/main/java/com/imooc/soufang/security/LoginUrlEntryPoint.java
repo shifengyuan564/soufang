@@ -50,7 +50,9 @@ public class LoginUrlEntryPoint extends LoginUrlAuthenticationEntryPoint {
     }
 
     /**
-     * 如果是Api接口 返回json数据 否则按照一般流程处理
+     * 没有权限的时候，会进入commence方法
+     *
+     * 如果是/api路径 返回json数据 否则按照一般流程处理
      * @param request
      * @param response
      * @param authException
@@ -58,19 +60,19 @@ public class LoginUrlEntryPoint extends LoginUrlAuthenticationEntryPoint {
      * @throws ServletException
      */
     @Override
-    public void commence(HttpServletRequest request,  HttpServletResponse response,
-                         AuthenticationException authException) throws IOException, ServletException {
+    public void commence(HttpServletRequest request,  HttpServletResponse response, AuthenticationException authException)
+            throws IOException, ServletException {
 
         String uri = request.getRequestURI();
-        if (uri.startsWith(API_FREFIX)) {
-            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-            response.setContentType(CONTENT_TYPE);
+        if (uri.startsWith(API_FREFIX)) {                           // 如果以‘/api’开头
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN);   // 403没权限
+            response.setContentType(CONTENT_TYPE);                  // json格式返回
 
             PrintWriter pw = response.getWriter();
-            pw.write(API_CODE_403);
+            pw.write(API_CODE_403);                                 // 返回json数据
             pw.close();
         } else {
-            super.commence(request, response, authException);
+            super.commence(request, response, authException);       // 非'/api'开头，按照一般流程走
         }
 
     }
